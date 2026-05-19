@@ -1,0 +1,11 @@
+{
+  "name": "pistas-evangelio-v8-sheet",
+  "version": "8.0.0",
+  "type": "module",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "latest",
+    "@netlify/functions": "latest",
+    "web-push": "latest"
+  }
+}
