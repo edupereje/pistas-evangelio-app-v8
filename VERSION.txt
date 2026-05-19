@@ -1,5 +1,4 @@
-Pistas del Evangelio v8.1 alegre
-- Corrige detección robusta de fecha en navegador usando formatToParts.
-- Mejora la pantalla de hoy cuando no existe una Pista exacta para la fecha actual.
-- Rediseño visual más luminoso: azul claro, turquesa, coral y violeta suave.
-- Caché y assets actualizados a v8.1.
+v8.2 lectura-fix
+- El botón Leer la Pista de hoy funciona también como enlace real (?fecha=...&leer=1).
+- La app abre directamente la lectura si llega con fecha en la URL.
+- Cache renovada.

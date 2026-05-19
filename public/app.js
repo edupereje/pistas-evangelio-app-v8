@@ -150,7 +150,15 @@ async function init() {
     }
   }
 
-  selectedFecha = getTodayPista()?.fecha;
+  const params = new URLSearchParams(location.search);
+  const requestedFecha = params.get("fecha");
+  const requestedRead = params.get("leer") === "1" || params.get("view") === "lectura";
+  if (requestedFecha && dayIsAvailable(requestedFecha)) {
+    selectedFecha = requestedFecha;
+    if (requestedRead || params.has("fecha")) currentTab = "lectura";
+  } else {
+    selectedFecha = getTodayPista()?.fecha;
+  }
   render();
 }
 
@@ -471,7 +479,7 @@ function renderHoy(p, state) {
       <div class="quote">${escapeHtml(highlight)}</div>
       <div class="muted">${p.celebracion}</div>
       <div class="pill">${p.cita}</div>
-      <button class="button" style="margin-top:16px" onclick="openPista('${p.fecha}')">Leer la Pista de hoy</button>
+      <a class="button" style="margin-top:16px" href="?fecha=${p.fecha}&leer=1" onclick="event.preventDefault(); openPista('${p.fecha}')">Leer la Pista de hoy</a>
     </div>
     ${showPrayer ? renderPrayerCard(false) : state.active ? renderPrayerSummary(state) : ""}
     <div class="button-row">
@@ -574,7 +582,7 @@ function renderArchivo() {
   return `<section>
     <h1 class="h1">Archivo</h1>
     <p class="muted">Pistas anteriores disponibles para volver a rezar con ellas.</p>
-    <div class="list">${availablePistas().slice().reverse().map((p) => `<button class="archive-item" onclick="openPista('${p.fecha}')"><strong>${p.titulo}</strong><span class="muted">${p.celebracion}</span><br><span class="pill">${p.cita}</span></button>`).join("")}</div>
+    <div class="list">${availablePistas().slice().reverse().map((p) => `<a class="archive-item" href="?fecha=${p.fecha}&leer=1" onclick="event.preventDefault(); openPista('${p.fecha}')"><strong>${p.titulo}</strong><span class="muted">${p.celebracion}</span><br><span class="pill">${p.cita}</span></a>`).join("")}</div>
   </section>`;
 }
 
