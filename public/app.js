@@ -50,12 +50,15 @@ function isLikelyInAppBrowser() {
 }
 
 function todayMadrid() {
-  return new Intl.DateTimeFormat("en-CA", {
+  // Evita problemas entre navegadores: algunos no devuelven en-CA como YYYY-MM-DD.
+  const parts = new Intl.DateTimeFormat("es-ES", {
     timeZone: "Europe/Madrid",
     year: "numeric",
     month: "2-digit",
     day: "2-digit"
-  }).format(new Date());
+  }).formatToParts(new Date());
+  const map = Object.fromEntries(parts.map((p) => [p.type, p.value]));
+  return `${map.year}-${map.month}-${map.day}`;
 }
 
 function isPastOrToday(fecha) {
@@ -456,11 +459,14 @@ function renderHoy(p, state) {
   const showInstall = !installed && !installDismissed;
   const showPrayer = installed && !state.active;
   const highlight = extractHighlight(p);
+  const today = todayMadrid();
+  const exactToday = p.fecha === today;
 
   return `<section>
     ${showInstall ? renderInstallCard() : ""}
     <div class="card hero">
-      <div class="eyebrow">Pista de hoy</div>
+      <div class="eyebrow">${exactToday ? "Pista de hoy" : "Última Pista publicada"}</div>
+      ${!exactToday ? `<div class="source-note">Hoy es ${today}. Todavía no hay una Pista publicada para esa fecha; mostramos la última disponible.</div>` : ""}
       <h1 class="h1">${p.titulo}</h1>
       <div class="quote">${escapeHtml(highlight)}</div>
       <div class="muted">${p.celebracion}</div>

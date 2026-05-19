@@ -1,3 +1,5 @@
-v8.0-sheet-app
-Contenido desde Google Sheets / Apps Script
-Secciones: Pistas, Estoy empezando, Imagen del día y Lectio fija
+Pistas del Evangelio v8.1 alegre
+- Corrige detección robusta de fecha en navegador usando formatToParts.
+- Mejora la pantalla de hoy cuando no existe una Pista exacta para la fecha actual.
+- Rediseño visual más luminoso: azul claro, turquesa, coral y violeta suave.
+- Caché y assets actualizados a v8.1.
