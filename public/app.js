@@ -7,6 +7,7 @@ const APP_URL = "https://pistas-evangelio-diario.netlify.app";
 const DONATION_URL = "https://www.donoamiiglesia.es/san/Home?st=&uri=nm%3Aoid%3AZ6_KP98H380OG7J40QGP8F2L01003#!/donar/21acd17c-ed3e-e611-80e8-005056b101e1";
 const CONTACT_PHONE = "34662519044";
 const CONTENT_API_URL = "/api/pistas";
+const STATIC_FALLBACK_URL = "/data/pistas.json?v=8.3";
 const REMEMBER_STEPS = [
   "Pide el Espíritu Santo",
   "Lee despacio y entiende",
@@ -134,20 +135,33 @@ function formatFullText(p) {
 async function init() {
   renderLoading();
   if ("serviceWorker" in navigator) {
-    await navigator.serviceWorker.register("/sw.js");
+    await navigator.serviceWorker.register("/sw.js?v=8.3");
   }
 
+  // Cargamos primero una copia local de respaldo para que la app nunca quede vacía
+  // si la función/API tarda, falla o devuelve una respuesta incompleta.
   try {
-    pistas = await loadPistasFromApi();
-  } catch (error) {
-    console.error("No se pudo cargar el contenido desde Google Sheets", error);
-    try {
-      pistas = await fetch("/data/pistas.json", { cache: "no-store" }).then((r) => r.json());
-    } catch (fallbackError) {
-      console.error("No se pudo cargar contenido de respaldo", fallbackError);
-      renderError("No se pudo cargar el contenido. Comprueba la conexión y vuelve a intentarlo.");
-      return;
+    pistas = await loadStaticFallback();
+  } catch (fallbackError) {
+    console.warn("No se pudo cargar contenido local de respaldo", fallbackError);
+    pistas = [];
+  }
+
+  // Después intentamos actualizar desde Google Sheets a través de Netlify Functions.
+  try {
+    const remotePistas = await loadPistasFromApi();
+    if (Array.isArray(remotePistas) && remotePistas.length > 0) {
+      pistas = remotePistas;
+    } else {
+      console.warn("La API no devolvió Pistas; se mantiene el respaldo local.");
     }
+  } catch (error) {
+    console.warn("No se pudo cargar el contenido desde Google Sheets; se mantiene respaldo local", error);
+  }
+
+  if (!Array.isArray(pistas) || pistas.length === 0) {
+    renderError("No se pudo cargar el contenido. Comprueba la conexión y vuelve a intentarlo.");
+    return;
   }
 
   const params = new URLSearchParams(location.search);
@@ -162,12 +176,23 @@ async function init() {
   render();
 }
 
+async function loadStaticFallback() {
+  const response = await fetch(STATIC_FALLBACK_URL, { cache: "no-store" });
+  if (!response.ok) throw new Error(`Error fallback HTTP ${response.status}`);
+  const data = await response.json();
+  const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : []);
+  if (!items.length) throw new Error("El respaldo local no contiene Pistas.");
+  return items.map(normalizePista).sort((a, b) => a.fecha.localeCompare(b.fecha));
+}
+
 async function loadPistasFromApi() {
-  const response = await fetch(`${CONTENT_API_URL}?t=${Date.now()}`, { cache: "no-store" });
+  const response = await fetch(`${CONTENT_API_URL}?force=1&t=${Date.now()}`, { cache: "no-store" });
   if (!response.ok) throw new Error(`Error HTTP ${response.status}`);
   const data = await response.json();
   if (!data.ok || !Array.isArray(data.items)) throw new Error(data.error || "Respuesta de contenido no válida");
-  return data.items.map(normalizePista).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  const items = data.items.map(normalizePista).filter((item) => item.fecha).sort((a, b) => a.fecha.localeCompare(b.fecha));
+  if (!items.length) throw new Error("La API respondió correctamente, pero no devolvió ninguna Pista.");
+  return items;
 }
 
 function normalizePista(item) {

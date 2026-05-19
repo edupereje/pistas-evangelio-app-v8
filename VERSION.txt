@@ -1,4 +1,1 @@
-v8.2 lectura-fix
-- El botón Leer la Pista de hoy funciona también como enlace real (?fecha=...&leer=1).
-- La app abre directamente la lectura si llega con fecha en la URL.
-- Cache renovada.
+v8.3 - carga local primero + actualización desde Google Sheets; corrige app vacía cuando API devuelve 0 pistas.
