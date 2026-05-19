@@ -1,5 +1,5 @@
-const CACHE_NAME = "pistas-v8-3-content-fallback-20260519";
-const APP_SHELL = ["/", "/index.html", "/styles.css?v=8.3", "/app.js?v=8.3", "/manifest.webmanifest?v=8.3"];
+const CACHE_NAME = "pistas-v8-4-content-fallback-20260519";
+const APP_SHELL = ["/", "/index.html", "/styles.css?v=8.4", "/app.js?v=8.4", "/manifest.webmanifest?v=8.4"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -21,8 +21,8 @@ self.addEventListener("push", (event) => {
   try { data = event.data.json(); } catch (e) {}
   event.waitUntil(self.registration.showNotification(data.title, {
     body: data.body,
-    icon: "/icons/icon-192.png?v=8.3",
-    badge: "/icons/icon-192.png?v=8.3",
+    icon: "/icons/icon-192.png?v=8.4",
+    badge: "/icons/icon-192.png?v=8.4",
     data: { url: data.url || "/" }
   }));
 });

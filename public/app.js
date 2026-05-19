@@ -7,7 +7,7 @@ const APP_URL = "https://pistas-evangelio-diario.netlify.app";
 const DONATION_URL = "https://www.donoamiiglesia.es/san/Home?st=&uri=nm%3Aoid%3AZ6_KP98H380OG7J40QGP8F2L01003#!/donar/21acd17c-ed3e-e611-80e8-005056b101e1";
 const CONTACT_PHONE = "34662519044";
 const CONTENT_API_URL = "/api/pistas";
-const STATIC_FALLBACK_URL = "/data/pistas.json?v=8.3";
+const STATIC_FALLBACK_URL = "/data/pistas.json?v=8.4";
 const REMEMBER_STEPS = [
   "Pide el Espíritu Santo",
   "Lee despacio y entiende",
@@ -135,7 +135,7 @@ function formatFullText(p) {
 async function init() {
   renderLoading();
   if ("serviceWorker" in navigator) {
-    await navigator.serviceWorker.register("/sw.js?v=8.3");
+    await navigator.serviceWorker.register("/sw.js?v=8.4");
   }
 
   // Cargamos primero una copia local de respaldo para que la app nunca quede vacía
@@ -193,6 +193,15 @@ async function loadPistasFromApi() {
   const items = data.items.map(normalizePista).filter((item) => item.fecha).sort((a, b) => a.fecha.localeCompare(b.fecha));
   if (!items.length) throw new Error("La API respondió correctamente, pero no devolvió ninguna Pista.");
   return items;
+}
+
+
+function hasStartingContent(p) {
+  return Boolean(p && p.estoyEmpezando && p.estoyEmpezando.trim().length > 0);
+}
+
+function hasImage(p) {
+  return Boolean(p && p.imagenDiaUrl && /^https?:\/\//i.test(p.imagenDiaUrl.trim()));
 }
 
 function normalizePista(item) {
